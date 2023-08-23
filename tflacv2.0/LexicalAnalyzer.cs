@@ -71,6 +71,7 @@ public static class LexicalAnalyzer
                 if (symbol == ' ')
                 {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.SeparatorSpace, TokenType.SeparatorSpace, "(space)", i + 1, i + 1));
+                    line++;
                 }
                 else if (symbol == '\n')
                 {
@@ -80,6 +81,7 @@ public static class LexicalAnalyzer
                 else if (symbol == '\t')
                 {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.SeparatorTab, TokenType.SeparatorTab, "\\t", i + 1, i + 1));
+                    line++;
                 }
                 i++;
                 continue;
@@ -90,6 +92,7 @@ public static class LexicalAnalyzer
             {
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Assignment, TokenType.Assignment, "=", i + 1, i + 1));
                 i++;
+                line++;
                 continue;
             }
 
@@ -98,6 +101,7 @@ public static class LexicalAnalyzer
             {
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Semicolon, TokenType.Semicolon, ";", i + 1, i + 1));
                 i++;
+                line++;
                 continue;
             }
 
@@ -106,6 +110,7 @@ public static class LexicalAnalyzer
             {
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Addition, TokenType.Addition, ";", i + 1, i + 1));
                 i++;
+                line++;
                 continue;
             }
 
@@ -114,6 +119,7 @@ public static class LexicalAnalyzer
             {
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Subtraction, TokenType.Subtraction, ";", i + 1, i + 1));
                 i++;
+                line++;
                 continue;
             }
 
@@ -122,6 +128,7 @@ public static class LexicalAnalyzer
             {
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Division, TokenType.Division, ";", i + 1, i + 1));
                 i++;
+                line++;
                 continue;
             }
 
@@ -148,14 +155,17 @@ public static class LexicalAnalyzer
                 {
                     str += "\"";
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Comment, TokenType.Comment, str, start + 1, i));
+                    line++;
                     i++;
                 }
                 else if (isRightSymbol) {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Multiplication, TokenType.Multiplication, str, start + 1, i));
+                    line++;
                 }
                 else // Иначе комментарий был не закрыт - это ошибка
                 {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Invalid, TokenType.Invalid, str, start + 1, i));
+                    line++;
                 }
 
                 continue;
@@ -178,6 +188,7 @@ public static class LexicalAnalyzer
 
                 // Добавляем лексему в список
                 tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Integer, TokenType.Integer, number, start + 1, i));
+                line++;
 
                 continue;
             }
@@ -199,10 +210,12 @@ public static class LexicalAnalyzer
                 if (keywords.ContainsKey(word))
                 {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)keywords[word], keywords[word], word, start + 1, i));
+                    line++;
                 }
                 else // Иначе это идентификатор
                 {
                     tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Identifier, TokenType.Identifier, word, start + 1, i));
+                    line++;
                 }
 
                 continue;
@@ -210,6 +223,7 @@ public static class LexicalAnalyzer
 
             // Недопустимый символ - добавляем лексему в список
             tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Invalid, TokenType.Invalid, symbol.ToString(), i + 1, i + 1));
+            line++;
             i++;
         }
 
@@ -217,7 +231,7 @@ public static class LexicalAnalyzer
     }
     public static string RunCompieler(string text)
     {
-        var tokens = LexicalAnalyzer.Tokenize(text);
+        var tokens = Tokenize(text);
         string result = "";
         foreach (var token in tokens)
         {
