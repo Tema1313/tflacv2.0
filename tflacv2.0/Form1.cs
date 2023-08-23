@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace tflacv2._0
 {
     public partial class Compieler : Form
@@ -28,6 +29,12 @@ namespace tflacv2._0
             this.KeyDown += new KeyEventHandler(hotkeyCreate);
             this.KeyDown += new KeyEventHandler(hotkeyOpen);
             this.KeyDown += new KeyEventHandler(hotkeyReference);
+        }
+
+        private void Launch()
+        {
+            richTextBoxOutput.Clear();
+            richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
         }
 
         //хоткеи
@@ -291,6 +298,11 @@ namespace tflacv2._0
         private void richTextBox1_VScroll(object sender, EventArgs e)
         {
             UpdateLineNumbers();
+        }
+
+        private void пускToolStripMenuItem_click(object sender, EventArgs e)
+        {
+            Launch();
         }
     }
 }
