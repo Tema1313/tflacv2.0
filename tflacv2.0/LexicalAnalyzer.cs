@@ -10,7 +10,7 @@ public static class LexicalAnalyzer
     // Перечисление для описания типов лексем
     enum TokenType
     {
-        KeywordVar, // Ключевое слово var
+        KeywordVar = 1, // Ключевое слово var
         KeywordInt, // Ключевое слово int
         KeywordBegin, // Ключевое слово Begin
         KeywordEnd, // Ключевое слово end
@@ -19,16 +19,16 @@ public static class LexicalAnalyzer
         SeparatorNewLine,  // Разделитель \n
         SeparatorTab,  // Разделитель \t
         Assignment, // Оператор присваивания
-        Semicolon,  // Конец оператора
-        Comment,     // Комментарий
         Integer,    // Целое число
         Addition, // Сложение
         Subtraction, // Вычитание
-        Multiplication, // Умножение
         Division, // Деление
-        DivisionWithoutRemainder, // Оператор деления без остатка
+        DivisionWithoutRemainder, // Оператор целочисленное деление
         OperatorOfTakingRemainder, // Оператор взятия остатка
+        Comment,     // Комментарий
+        Multiplication, // Умножение
         Parentheses, // Круглые скобки
+        Semicolon,  // Конец оператора
         Invalid     // Недопустимый символ
     }
 
@@ -108,7 +108,7 @@ public static class LexicalAnalyzer
             // Если текущий символ является оператором сложения (+)
             if (symbol == '+')
             {
-                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Addition, TokenType.Addition, ";", i + 1, i + 1));
+                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Addition, TokenType.Addition, "+", i + 1, i + 1));
                 i++;
                 line++;
                 continue;
@@ -117,7 +117,7 @@ public static class LexicalAnalyzer
             // Если текущий символ является оператором вычитания (-)
             if (symbol == '-')
             {
-                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Subtraction, TokenType.Subtraction, ";", i + 1, i + 1));
+                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Subtraction, TokenType.Subtraction, "-", i + 1, i + 1));
                 i++;
                 line++;
                 continue;
@@ -126,7 +126,7 @@ public static class LexicalAnalyzer
             // Если текущий символ является оператором вычитания (/)
             if (symbol == '/')
             {
-                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Division, TokenType.Division, ";", i + 1, i + 1));
+                tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Division, TokenType.Division, "/", i + 1, i + 1));
                 i++;
                 line++;
                 continue;
@@ -171,7 +171,36 @@ public static class LexicalAnalyzer
                 continue;
             }
 
+            // Если текущий символ является скобкой [(] - открытие скобки
+            if (symbol == '(')
+            {
+                string str = "(";
+                int start = i;
+                i++;
 
+                // Пока не найдем закрывающую скобку или конец строки
+                while (i < input.Length && input[i] != '\n' && input[i] != ')')
+                {
+                    str += input[i];
+                    i++;
+                }
+
+                // Если нашли закрывающую скобку, то добавляем лексему в список
+                if (i < input.Length && input[i] == ')')
+                {
+                    str += ")";
+                    tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Parentheses, TokenType.Parentheses, str, start + 1, i));
+                    line++;
+                    i++;
+                }
+                else // Иначе скобка была не закрыта - это ошибка
+                {
+                    tokens.Add(new Tuple<int, int, TokenType, string, int, int>(line, (int)TokenType.Invalid, TokenType.Invalid, str, start + 1, i));
+                    line++;
+                }
+
+                continue;
+            }
 
             // Если текущий символ является цифрой, то это может быть число
             if (IsDigit(symbol))
