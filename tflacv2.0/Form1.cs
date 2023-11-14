@@ -302,7 +302,8 @@ namespace tflacv2._0
 
         private void пускToolStripMenuItem_click(object sender, EventArgs e)
         {
-            Launch();
+            richTextBoxOutput.Text = DKA.RunCompieler(richTextBoxInput.Text);
+            //Launch();
         }
     }
 }
