@@ -11,8 +11,9 @@ class DKA
         Start,  // Начальное состояние
         q1,     // Состояние после первого 'a'
         q2,     // Состояние после 'aa'
-        q3,     // Состояние после 'a' и перед 'b'
-        q4,     // Состояние перед 'ca'
+        q3,     // Состояние после 'b'
+        q4,     // Состояние после 'ab'
+        q5,     // Состояние перед 'ca'
         Final,  // Конечное состояние
         Reject  // Состояние отклонения
     }
@@ -30,7 +31,7 @@ class DKA
         }
 
         // Проверяем, находимся ли в конечном состоянии или в одном из правильных
-        return currentState == State.Final || input == "aa";
+        return currentState == State.Final || currentState == State.q2;
     }
 
     private bool ProcessSymbol(char symbol)
@@ -69,15 +70,24 @@ class DKA
             case State.q3:
                 // Если встречаем 'a', переходим в q2, если 'c', переходим в q4, иначе отклоняем
                 if (symbol == 'a')
-                    currentState = State.q2;
-                else if (symbol == 'c')
                     currentState = State.q4;
+                else if (symbol == 'c')
+                    currentState = State.q5;
+                else
+                    currentState = State.Reject;
+                break;
+
+            // Состояние после 'ab'
+            case State.q4:
+                // Если встречаем 'b', переходим в q3, иначе переходим в состояние отклонения
+                if (symbol == 'b')
+                    currentState = State.q3;
                 else
                     currentState = State.Reject;
                 break;
 
             // Состояние после 'c'
-            case State.q4:
+            case State.q5:
                 // Если встречаем 'a', тогда достигаем финального состояния, в противном случае переходим в состояние отклонения
                 if (symbol == 'a')
                     currentState = State.Final;
