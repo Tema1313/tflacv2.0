@@ -34,7 +34,29 @@ namespace tflacv2._0
         private void Launch()
         {
             richTextBoxOutput.Clear();
-            richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
+            if (richTextBoxInput.Text != string.Empty)
+            {
+                List<MatchResult> matchCollections = new List<MatchResult>();
+                RegexMatcher r = new RegexMatcher(@"<a\s+[^>]*href=[""']([^""']+)[""'][^>]*>.*?<\/a>");
+                RegexMatcher r1 = new RegexMatcher(@"[ab]*[ab][ab]*"); 
+                ManualMatcher r2 = new ManualMatcher();
+                
+                matchCollections = r.FindMatches(richTextBoxInput.Text);
+                richTextBoxOutput.Text = "РВ, описывающее HTML-код ссылки:\n";
+                foreach (MatchResult match in matchCollections)
+                    richTextBoxOutput.Text += $"{match.Substring}: c {match.StartIndex} символа\n";
+                
+                matchCollections = r1.FindMatches(richTextBoxInput.Text);
+                richTextBoxOutput.Text += "РВ (a* | b*):\n";
+                foreach (MatchResult match in matchCollections)
+                    richTextBoxOutput.Text += $"{match.Substring}: c {match.StartIndex} символа\n";
+               
+                matchCollections = r2.FindMatches(richTextBoxInput.Text);
+                richTextBoxOutput.Text += "РВ abc | cc:\n";
+                foreach (MatchResult match in matchCollections)
+                    richTextBoxOutput.Text += $"{match.Substring}: c {match.StartIndex} символа\n";
+            }
+            //richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
         }
 
         //хоткеи
