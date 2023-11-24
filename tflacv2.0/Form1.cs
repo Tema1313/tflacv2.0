@@ -14,9 +14,13 @@ namespace tflacv2._0
 {
     public partial class Compieler : Form
     {
+        private int maxFontSize = 19;
+        private int minFontSize = 6;
+
         public Compieler()
         {
             InitializeComponent();
+
             //параметры saveFileDialog1 и openFileDialog1
             openFileDialog1.FileName = string.Empty;
             saveFileDialog1.FileName = string.Empty;
@@ -34,7 +38,8 @@ namespace tflacv2._0
         private void Launch()
         {
             richTextBoxOutput.Clear();
-            richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
+            richTextBoxOutput.Text = "habxshbashbxhjbajsxbhjasnx";
+            //richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
         }
 
         //хоткеи
@@ -303,6 +308,37 @@ namespace tflacv2._0
         private void пускToolStripMenuItem_click(object sender, EventArgs e)
         {
             Launch();
+        }
+
+        //Работа со шрифтом
+        private void увеличитьШрифтToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            if (richTextBoxInput.Font.Size > maxFontSize)
+                return;
+            richTextBoxInput.Font = new Font(richTextBoxInput.Font.FontFamily, richTextBoxInput.Font.Size + 2);
+            richTextBoxLineNumber.Font = new Font(richTextBoxLineNumber.Font.FontFamily, richTextBoxLineNumber.Font.Size + 2);
+        }
+
+        private void уменьшитьШрифтToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            if (richTextBoxInput.Font.Size < minFontSize)
+                return;
+            richTextBoxInput.Font = new Font(richTextBoxInput.Font.FontFamily, richTextBoxInput.Font.Size - 2);
+            richTextBoxLineNumber.Font = new Font(richTextBoxLineNumber.Font.FontFamily, richTextBoxLineNumber.Font.Size - 2);
+        }
+
+        private void увеличитьШрифтToolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            if (richTextBoxOutput.Font.Size > maxFontSize)
+                return;
+            richTextBoxOutput.Font = new Font(richTextBoxOutput.Font.FontFamily, richTextBoxOutput.Font.Size + 2);
+        }
+
+        private void уменьшитьШрифтToolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            if (richTextBoxOutput.Font.Size < minFontSize)
+                return;
+            richTextBoxOutput.Font = new Font(richTextBoxOutput.Font.FontFamily, richTextBoxOutput.Font.Size - 2);
         }
     }
 }
