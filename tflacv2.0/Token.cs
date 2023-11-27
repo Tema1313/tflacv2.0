@@ -9,22 +9,47 @@ namespace tflacv2._0
     public class Token
     {
         private string _value;
-        public string GetValue() { return this._value; }
-        private TokenType _tokenType;
-        public TokenType GetTokenType() { return this._tokenType; }
         private int _index;
-        public int GetIndex() { return this._index; }
         private int _posStart;
-        public int GetPosStart() { return _posStart; }
         private int _posEnd;
-        public int GetPosEnd() { return _posEnd; }
+        private TokenType _tokenType;
+        private static List<Token> _tokens;
+
+        public string GetValue() 
+        { 
+            return this._value; 
+        }
+
+        public TokenType GetTokenType() 
+        { 
+            return this._tokenType; 
+        }
+
+        public int GetIndex() 
+        { 
+            return this._index; 
+        }
+
+        public int GetPosStart() 
+        { 
+            return _posStart; 
+        }
+
+        public int GetPosEnd() 
+        { 
+            return _posEnd; 
+        }
+
+        public static List<Token> GetTokens() 
+        { 
+            return _tokens; 
+        }
+
         public static void TokensClear()
         {
             _tokens.Clear();
         }
 
-        private static List<Token> _tokens;
-        public static List<Token> GetTokens() { return _tokens; }
         public Token(TokenType tokenType, string value, int index, int posStart, int posEnd)
         {
             if (_tokens == null)

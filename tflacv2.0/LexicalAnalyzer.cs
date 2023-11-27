@@ -21,7 +21,8 @@ public enum TokenType
     Double,     //Вещественное число
     EndOfLine,  //Конец строки
     Invalid,    //Недопустимый символ
-    EndOfInput  //Конец обрабатываемого текста
+    EndOfInput,  //Конец обрабатываемого текста
+    InvalidLetter,  // Токен с маленькой буквой
 }
 
 public static class LexicalAnalyzer
@@ -38,6 +39,7 @@ public static class LexicalAnalyzer
         return c >= '0' && c <= '9';
     }
 
+    //Функция для выделения токенов
     public static void Tokenize(string input)
     {
         if (Token.GetTokens() != null)
@@ -49,13 +51,13 @@ public static class LexicalAnalyzer
         while (pos < input.Length)
         {
             liter = input[pos];
-            if (char.IsWhiteSpace(liter))
+            if (char.IsWhiteSpace(liter)) //Если пробел-пропускаем
             {
                 pos++;
                 continue;
             }
 
-            if (IsLetter(liter))
+            if (IsLetter(liter)) //Если литер - буква
             {
                 startPos = pos;
                 while (pos < input.Length && (IsLetter(input[pos]) || IsDigit(input[pos])))
@@ -67,15 +69,21 @@ public static class LexicalAnalyzer
                 continue;
             }
 
-            if (IsDigit(liter))
+            if (IsDigit(liter)) //Если литер - цифра
             {
                 startPos = pos;
-                bool hasPoint = false;
-                bool invalid = false;
+                bool hasPoint = false; // Была ли точка или запятая
+                bool invalid = false; //Корректно или нет
                 while (pos < input.Length && (IsDigit(input[pos]) || (!hasPoint && (input[pos] == '.' || input[pos] == ','))))
                 {
                     if (input[pos] == '.' || input[pos] == ',')
-                    { hasPoint = true; if (!IsDigit(input[pos])) invalid = true; }
+                    { 
+                        hasPoint = true;
+                        if (!IsDigit(input[pos])) 
+                        {
+                            invalid = true;
+                        }
+                    }
                     pos++;
                 }
                 if (invalid)

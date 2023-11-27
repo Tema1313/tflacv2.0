@@ -38,8 +38,20 @@ namespace tflacv2._0
         private void Launch()
         {
             richTextBoxOutput.Clear();
-            richTextBoxOutput.Text = "habxshbashbxhjbajsxbhjasnx";
-            //richTextBoxOutput.Text = LexicalAnalyzer.RunCompieler(richTextBoxInput.Text);
+            if (richTextBoxInput.Text != string.Empty)
+            {
+                LexicalAnalyzer.Tokenize(richTextBoxInput.Text);
+                Parser.Parse();
+                if (Parser.GetErrors().Count == 0)
+                {
+                    richTextBoxOutput.Text = "Ошибок нет!";
+                }
+                else
+                {
+                    richTextBoxOutput.Text = ParseErrors.ErrorsOut();
+                    Parser.ClearErrorList();
+                }
+            }
         }
 
         //хоткеи
