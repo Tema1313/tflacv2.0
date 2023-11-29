@@ -13,7 +13,8 @@ namespace tflacv2._0
         private static int currentTokenIndex;
         private static int state;
         private static bool hasIdentificator;
-        private static bool hasError;
+        private static bool hasErrorOnLeftSide;
+        private static bool hasAssignmentOperator;
         private static int braketLeftCounter;
         private static int braketRightCounter;
 
@@ -102,7 +103,8 @@ namespace tflacv2._0
             currentTokenIndex = 0;
             state = 0;
             hasIdentificator = false;
-            hasError = false;
+            hasAssignmentOperator = false;
+            hasErrorOnLeftSide = false;
             braketLeftCounter = 0;
             braketRightCounter = 0;
             try
@@ -119,14 +121,20 @@ namespace tflacv2._0
 
         private static void Parsing()
         {
-            while (currentTokenIndex < tokens.Count)
+            while (currentTokenIndex < tokens.Count && (!IsEqualityWithCurrentToken(TokenType.AssignmentOperator)))
             {
                 if (IsEqualityWithCurrentToken(TokenType.Identifier))
                 {
                     Identifier();
+                    nextIndex();
                 }
                 else
                 {
+                    if (!hasErrorOnLeftSide) 
+                    {
+                        hasErrorOnLeftSide = true;
+                        Error("В левой части от оператора присваивания может быть только идентификатор");
+                    }
                     nextIndex();
                 }
             }
@@ -141,11 +149,9 @@ namespace tflacv2._0
             if (braketLeftCounter > braketRightCounter)
             {
                 Error("Ожидался символ закрывающей скобки )");
-                hasError = true;
             } else if (braketRightCounter > braketLeftCounter)
             {
                 Error("Ожидался символ открывающей скобки (");
-                hasError = true;
             }
         }
 
@@ -159,7 +165,7 @@ namespace tflacv2._0
             {
                 state = 1;
             }
-            hasError = false;
+            hasAssignmentOperator = true;
             nextIndex();
         }
 
@@ -169,6 +175,9 @@ namespace tflacv2._0
             if (!hasIdentificator)
             {
                 hasIdentificator = true;
+            } else if (!hasAssignmentOperator && !hasErrorOnLeftSide) 
+            {
+                Error("Слева может быть только один идентификатор");
             }
             else
             {
@@ -249,7 +258,7 @@ namespace tflacv2._0
             } else if (IsEqualityWithCurrentToken(TokenType.Identifier))
             {
                 Identifier();
-            } else if (IsEqualityWithCurrentToken(TokenType.UnsignedNumber))
+            } else if (IsEqualityWithCurrentToken(TokenType.UnsignedNumber) || IsEqualityWithCurrentToken(TokenType.Double))
             {
                 nextIndex();
             } else if (IsEqualityWithCurrentToken(TokenType.InvalidSymbol))
