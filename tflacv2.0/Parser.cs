@@ -11,11 +11,11 @@ namespace tflacv2._0
         private static List<ParseErrors> errors = new List<ParseErrors>();
         private static List<Token> tokens;
         private static int currentTokenIndex;
-        private static bool hasId;
         private static int state;
-        private static bool hasEr;
-        private static int braketLCounter;
-        private static int braketRCounter;
+        private static bool hasIdentificator;
+        private static bool hasError;
+        private static int braketLeftCounter;
+        private static int braketRightCounter;
 
         public static List<ParseErrors> GetErrors() 
         { 
@@ -25,17 +25,25 @@ namespace tflacv2._0
         private static void Error(string msg)
         {
             if (IsNextEmpty())
+            {
                 errors.Add(new ParseErrors(msg, currentTokenIndex));
+            }
             else
-                errors.Add(new ParseErrors(msg, currentTokenIndex, next().GetValue()));
+            {
+                errors.Add(new ParseErrors(msg, currentTokenIndex, getCurrentToken().GetValue()));
+            }
         }
 
         private static void Error(string msg, int index)
         {
             if (IsNextEmpty())
+            {
                 errors.Add(new ParseErrors(msg, index));
+            }
             else
+            {
                 errors.Add(new ParseErrors(msg, index, tokens[index].GetValue()));
+            }
         }
 
         public static void ClearErrorList() 
@@ -44,22 +52,48 @@ namespace tflacv2._0
             ParseErrors.SetLastId(); 
         }
 
-        private static Token next()
+        private static Token getCurrentToken()
         {
             if (currentTokenIndex < tokens.Count && tokens[currentTokenIndex] != null)
+            {
                 return tokens[currentTokenIndex];
-            else return null;
+            }
+            else {
+                return null;
+            }
         }
 
         private static void nextIndex()
         {
-            if (currentTokenIndex < tokens.Count)
+            if (currentTokenIndex < tokens.Count) {
                 currentTokenIndex++;
+            }
         }
 
         private static bool IsNextEmpty()
         {
-            return next() == null;
+            return getCurrentToken() == null;
+        }
+
+
+        private static bool IsEqualityWithCurrentToken(TokenType expectedToken)
+        {
+            if (currentTokenIndex >= tokens.Count)
+            {
+                return false;
+            }
+            return getCurrentToken().GetTokenType() == expectedToken;
+        }
+
+        private static bool IsSign(int currentIndex)
+        {
+            if (IsNextEmpty())
+            {
+                return false;
+            }
+            return (tokens[currentIndex].GetTokenType() == TokenType.Plus || tokens[currentIndex].GetTokenType() == TokenType.Minus
+                || tokens[currentIndex].GetTokenType() == TokenType.Div
+                || tokens[currentIndex].GetTokenType() == TokenType.Mult);
         }
 
         public static void Parse()
@@ -67,14 +101,14 @@ namespace tflacv2._0
             tokens = Token.GetTokens();
             currentTokenIndex = 0;
             state = 0;
-            hasId = false;
-            hasEr = false;
-            braketLCounter = 0;
-            braketRCounter = 0;
+            hasIdentificator = false;
+            hasError = false;
+            braketLeftCounter = 0;
+            braketRightCounter = 0;
             try
             {
                 Parsing();
-                if (currentTokenIndex >= tokens.Count && !(next() == null))
+                if (currentTokenIndex >= tokens.Count && !(getCurrentToken() == null))
                     Error("Нежиданный символ в коде.");
             }
             catch 
@@ -85,120 +119,115 @@ namespace tflacv2._0
 
         private static void Parsing()
         {
-            if (next().GetTokenType() == TokenType.Оператор_присваивания)
+            while (currentTokenIndex < tokens.Count)
             {
-                Error("Ожидался идентификатор");
+                if (IsEqualityWithCurrentToken(TokenType.Identifier))
+                {
+                    Identifier();
+                }
+                else
+                {
+                    nextIndex();
+                }
             }
-            else
+            if (!hasIdentificator)
             {
-                while (currentTokenIndex < tokens.Count && (!Check(TokenType.Оператор_присваивания)))
-                {
-                    if (hasId && !hasEr)
-                    { 
-                        Error("Слева может быть только 1 идентификатор"); 
-                        hasEr = true; 
-                    }
-                    if (Check(TokenType.Идентификатор) || Check(TokenType.InvalidLetter))
-                    {
-                        Identifier();
-                    }
-                    else
-                    {
-                        nextIndex();
-                    }
-                }
-                if (!hasId)
-                {
-                    Error("Ожидался идентификатор", currentTokenIndex - 1);
-                }
+                Error("Ожидался идентификатор", currentTokenIndex - 1);
             }
 
             Equal();
             Expression();
 
-            if (braketLCounter > braketRCounter)
+            if (braketLeftCounter > braketRightCounter)
             {
                 Error("Ожидался символ закрывающей скобки )");
-                hasEr = true;
-            } else if (braketRCounter > braketLCounter)
+                hasError = true;
+            } else if (braketRightCounter > braketLeftCounter)
             {
                 Error("Ожидался символ открывающей скобки (");
-                hasEr = true;
+                hasError = true;
             }
         }
 
         private static void Equal()
         {
-            if (!Check(TokenType.Оператор_присваивания))
+            if (!IsEqualityWithCurrentToken(TokenType.AssignmentOperator))
+            {
                 Error("Ожидался оператор \"=\"");
+            }
             else
+            {
                 state = 1;
-            hasEr = false;
+            }
+            hasError = false;
             nextIndex();
         }
 
         // Идентификатор -> Б {Б | Ц}
         private static void Identifier()
         {
-            if (!hasId)
-                hasId = true;
-            if (Check(TokenType.InvalidLetter))
+            if (!hasIdentificator)
             {
-                Error("Идентификаторы могут содержать только большие буквы");
-                nextIndex();
+                hasIdentificator = true;
             }
             else
-                ExpectedTokenCompare(TokenType.Идентификатор);
+            {
+                ExpectedTokenCompare(TokenType.Identifier);
+            }
         }
 
         // Выражение -> T {+ T} {- T}
         private static void Expression()
         {
-            Term();
-            while (currentTokenIndex < tokens.Count && (Check(TokenType.Plus) || Check(TokenType.Minus)))
+            Terminal();
+            while (currentTokenIndex < tokens.Count && (IsEqualityWithCurrentToken(TokenType.Plus) || IsEqualityWithCurrentToken(TokenType.Minus)))
             {
                 nextIndex();
-                if (!IsNextEmpty() && next().GetTokenType() == TokenType.BracketR)
+                if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.BracketRight)
                 {
-                    braketRCounter++;
+                    braketRightCounter++;
                     nextIndex();
                 }
-                Term();
+                Terminal();
             }
-            if (!IsNextEmpty() && next().GetTokenType() == TokenType.BracketR)
+            if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.BracketRight)
             {
-                braketRCounter++;
+                braketRightCounter++;
                 nextIndex();
             }
         }
 
-        private static void Term()
+        private static void Terminal()
         {
             Operand();
-            while (currentTokenIndex < tokens.Count && (Check(TokenType.Mult) || Check(TokenType.Div)))
+            while (currentTokenIndex < tokens.Count && (IsEqualityWithCurrentToken(TokenType.Mult) || IsEqualityWithCurrentToken(TokenType.Div)))
             {
                 nextIndex();
-                if (!IsNextEmpty() && next().GetTokenType() == TokenType.BracketR)
+                if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.BracketRight)
                 {
-                    braketRCounter++;
+                    braketRightCounter++;
                     nextIndex();
                 }
                 Operand();
             }
-            if (!IsNextEmpty() && (next().GetTokenType() == TokenType.Число_без_знака || next().GetTokenType() == TokenType.BracketL) && !IsSign(currentTokenIndex - 1))
+            if (!IsNextEmpty() && (getCurrentToken().GetTokenType() == TokenType.UnsignedNumber || getCurrentToken().GetTokenType() == TokenType.BracketLeft) && !IsSign(currentTokenIndex - 1))
             {
                 nextIndex();
                 if (!IsSign(currentTokenIndex))
-                { Error("Пропущен арифметический знак"); nextIndex(); }
-                if (!IsNextEmpty() && next().GetTokenType() == TokenType.BracketL)
+                { 
+                    Error("Пропущен арифметический знак"); nextIndex(); 
+                }
+                if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.BracketLeft)
+                {
                     Expression();
+                }
             }
-            if (!IsNextEmpty() && next().GetTokenType() == TokenType.BracketR)
+            if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.BracketRight)
             {
-                braketRCounter++;
+                braketRightCounter++;
                 nextIndex();
             }
-            if (!IsNextEmpty() && next().GetTokenType() == TokenType.Invalid)
+            if (!IsNextEmpty() && getCurrentToken().GetTokenType() == TokenType.InvalidSymbol)
             {
                 Error("Неизвестный символ");
                 nextIndex();
@@ -212,22 +241,22 @@ namespace tflacv2._0
                 nextIndex();
                 return;
             }
-            if (Check(TokenType.BracketL))
+            if (IsEqualityWithCurrentToken(TokenType.BracketLeft))
             {
                 nextIndex();
-                braketLCounter++;
+                braketLeftCounter++;
                 Expression();
-            }
-            else if (Check(TokenType.Идентификатор) || Check(TokenType.InvalidLetter))
+            } else if (IsEqualityWithCurrentToken(TokenType.Identifier))
+            {
                 Identifier();
-            else if (Check(TokenType.Число_без_знака))
+            } else if (IsEqualityWithCurrentToken(TokenType.UnsignedNumber))
+            {
                 nextIndex();
-            else if (Check(TokenType.Invalid))
+            } else if (IsEqualityWithCurrentToken(TokenType.InvalidSymbol))
             {
                 Error("Неизвестный символ");
                 nextIndex();
-            }
-            else
+            } else
             {
                 Error("Ожидался идентификатор или выражение");
                 nextIndex();
@@ -238,45 +267,14 @@ namespace tflacv2._0
         {
             if (currentTokenIndex < tokens.Count)
             {
-                if (next().GetTokenType() == expectedToken)
+                if (getCurrentToken().GetTokenType() == expectedToken)
                     nextIndex();
                 else
                 {
-                    Error($"Ожидалась лексема {Convert.ToString(expectedToken)}, получена {Convert.ToString(next().GetTokenType())}");
+                    Error($"Ожидалась лексема {Convert.ToString(expectedToken)}, получена {Convert.ToString(getCurrentToken().GetTokenType())}");
                     nextIndex();
                 }
             }
-        }
-
-        private static bool Check(TokenType expectedToken)
-        {
-            if (currentTokenIndex >= tokens.Count)
-                return false;
-            return next().GetTokenType() == expectedToken;
-        }
-        private static bool CheckNext(TokenType expectedToken)
-        {
-            if (currentTokenIndex >= tokens.Count)
-                return false;
-            return tokens[currentTokenIndex + 1].GetTokenType() == expectedToken;
-        }
-
-        private static bool IsLitter()
-        {
-            return (next().GetTokenType() == TokenType.Число_без_знака
-                    || next().GetTokenType() == TokenType.Plus
-                    || next().GetTokenType() == TokenType.Minus
-                    || next().GetTokenType() == TokenType.Mult
-                    || next().GetTokenType() == TokenType.BracketL
-                    || next().GetTokenType() == TokenType.BracketR);
-        }
-        private static bool IsSign(int currentIndex)
-        {
-            if (IsNextEmpty())
-                return false;
-            return (tokens[currentIndex].GetTokenType() == TokenType.Plus || tokens[currentIndex].GetTokenType() == TokenType.Minus
-                || tokens[currentIndex].GetTokenType() == TokenType.Div
-                || tokens[currentIndex].GetTokenType() == TokenType.Mult);
         }
     }
 }

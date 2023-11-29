@@ -8,131 +8,138 @@ using System.Threading.Tasks;
 public enum TokenType
 {
     Letter,     //Буква
-    Число_без_знака,     //Цифра
-    Идентификатор, //Идентификатор
+    UnsignedNumber,     //Цифра
+    Identifier, //Идентификатор
     Separator,  //Разделитель
     Plus,       //Плюс
     Minus,      //Минус
     Mult,       //Умножение
     Div,        //Деление
-    Оператор_присваивания,      //Оператор присваивания
-    BracketR,   //Правая скобка
-    BracketL,   //Левая скобка
+    AssignmentOperator,      //Оператор присваивания
+    BracketRight,   //Правая скобка
+    BracketLeft,   //Левая скобка
     Double,     //Вещественное число
     EndOfLine,  //Конец строки
-    Invalid,    //Недопустимый символ
+    InvalidSymbol,    //Недопустимый символ
     EndOfInput,  //Конец обрабатываемого текста
-    InvalidLetter,  // Токен с маленькой буквой
 }
 
 public static class LexicalAnalyzer
 {
     // Метод для проверки, является ли символ буквой
-    private static bool IsLetter(char c)
+    private static bool IsLetter(char currentSymbol)
     {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+        return (currentSymbol >= 'a' && currentSymbol <= 'z') || (currentSymbol >= 'A' && currentSymbol <= 'Z');
     }
 
     // Метод для проверки, является ли символ цифрой
-    private static bool IsDigit(char c)
+    private static bool IsDigit(char currentSymbol)
     {
-        return c >= '0' && c <= '9';
+        return currentSymbol >= '0' && currentSymbol <= '9';
     }
 
     //Функция для выделения токенов
-    public static void Tokenize(string input)
+    public static void Tokenize(string incomingString)
     {
         if (Token.GetTokens() != null)
-            Token.TokensClear();
-        char liter;
-        int pos = 0;
-        int number = 0;
-        int startPos;
-        while (pos < input.Length)
         {
-            liter = input[pos];
-            if (char.IsWhiteSpace(liter)) //Если пробел-пропускаем
+            Token.TokensClear();
+        }
+        char currentLiter;
+        int currentPosition = 0;
+        int number = 0;
+        int startPosition;
+        while (currentPosition < incomingString.Length)
+        {
+            currentLiter = incomingString[currentPosition];
+            if (char.IsWhiteSpace(currentLiter)) //Если пробел-пропускаем
             {
-                pos++;
+                currentPosition++;
                 continue;
             }
 
-            if (IsLetter(liter)) //Если литер - буква
+            if (IsLetter(currentLiter)) //Если литер - буква
             {
-                startPos = pos;
-                while (pos < input.Length && (IsLetter(input[pos]) || IsDigit(input[pos])))
+                startPosition = currentPosition;
+                while (currentPosition < incomingString.Length && (IsLetter(incomingString[currentPosition]) || IsDigit(incomingString[currentPosition])))
                 {
-                    pos++;
+                    currentPosition++;
                 }
 
-                new Token(TokenType.Идентификатор, input.Substring(startPos, pos - startPos), number++, startPos, pos);
+                new Token(TokenType.Identifier, incomingString.Substring(startPosition, currentPosition - startPosition), number++, startPosition, currentPosition);
                 continue;
             }
 
-            if (IsDigit(liter)) //Если литер - цифра
+            if (IsDigit(currentLiter)) //Если литер - цифра
             {
-                startPos = pos;
+                startPosition = currentPosition;
                 bool hasPoint = false; // Была ли точка или запятая
                 bool invalid = false; //Корректно или нет
-                while (pos < input.Length && (IsDigit(input[pos]) || (!hasPoint && (input[pos] == '.' || input[pos] == ','))))
+                while (currentPosition < incomingString.Length && (IsDigit(incomingString[currentPosition]) || (!hasPoint && (incomingString[currentPosition] == '.'))))
                 {
-                    if (input[pos] == '.' || input[pos] == ',')
-                    { 
+                    if (incomingString[currentPosition] == '.' || incomingString[currentPosition] == ',')
+                    {
                         hasPoint = true;
-                        if (!IsDigit(input[pos])) 
-                        {
-                            invalid = true;
-                        }
+                    } else if (!(IsDigit(incomingString[currentPosition]))) 
+                    {
+                        invalid = true;
                     }
-                    pos++;
+                    currentPosition++;
                 }
                 if (invalid)
-                    new Token(TokenType.Invalid, input.Substring(startPos, pos - startPos), number++, startPos, pos);
-                else
-                    new Token(TokenType.Число_без_знака, input.Substring(startPos, pos - startPos), number++, startPos, pos);
+                {
+                    new Token(TokenType.InvalidSymbol, incomingString.Substring(startPosition, currentPosition - startPosition), number++, startPosition, currentPosition);
+                }
+                else if (hasPoint)
+                {
+                    new Token(TokenType.Double, incomingString.Substring(startPosition, currentPosition - startPosition), number++, startPosition, currentPosition);
+                }
+                else {
+                    new Token(TokenType.UnsignedNumber, incomingString.Substring(startPosition, currentPosition - startPosition), number++, startPosition, currentPosition);
+                }
                 continue;
             }
 
-            switch (liter)
+            switch (currentLiter)
             {
                 case '+':
-                    new Token(TokenType.Plus, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.Plus, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 case '-':
-                    new Token(TokenType.Minus, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.Minus, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 case '*':
                     {
-                        new Token(TokenType.Mult, input.Substring(pos, 1), number++, pos, pos);
-                        pos++;
+                        new Token(TokenType.Mult, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                        currentPosition++;
                     }
                     break;
                 case '/':
-                    new Token(TokenType.Div, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.Div, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 case '=':
-                    new Token(TokenType.Оператор_присваивания, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.AssignmentOperator, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 case '(':
-                    new Token(TokenType.BracketL, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.BracketLeft, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 case ')':
-                    new Token(TokenType.BracketR, input.Substring(pos, 1), number++, pos, pos);
-                    pos++;
+                    new Token(TokenType.BracketRight, incomingString.Substring(currentPosition, 1), number++, currentPosition, currentPosition);
+                    currentPosition++;
                     break;
                 default:
-                    int start = pos;
-                    while (pos < input.Length && !char.IsWhiteSpace(input[pos]) && !IsLetter(input[pos]) && !IsDigit(input[pos]))
+                    int start = currentPosition;
+                    while (currentPosition < incomingString.Length && !char.IsWhiteSpace(incomingString[currentPosition]) && !IsLetter(incomingString[currentPosition]) && !IsDigit(incomingString[currentPosition]))
                     {
-                        pos++;
+                        currentPosition++;
                     }
-                    string invalidToken = input.Substring(start, pos - start);
-                    new Token(TokenType.Invalid, invalidToken, number++, start + 1, pos);
+                    string invalidToken = incomingString.Substring(start, currentPosition - start);
+                    new Token(TokenType.InvalidSymbol, invalidToken, number++, start + 1, currentPosition);
                     break;
             }
         }

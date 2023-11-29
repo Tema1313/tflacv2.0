@@ -6,66 +6,65 @@ using System.Threading.Tasks;
 
 public enum ErrorType
 {
-    IdFirstSymb,
-    WaitedId,
+    IdFirstSymb, // Первый символ - буква
+    WaitedIdentificator,
     WaitedIdOrExp,
     WaitedEqual,
-    InvalidSymb,
+    InvalidSymbol,
     EqualMiss,
-    InvalidToken
+    InvalidToken // Некорректный токен
 }
 
 namespace tflacv2._0
 {
     public class ParseErrors
     {
-        private string _msg;
-        private static string _tokenValue;
-        private int _id { get; }
-        private int _tokenStartPos { get; }
-        private int _tokenEndPos { get; }
-        private static int _lastId { get; set; }
+        private string message;
+        private static string tokenValue;
+        private int id { get; }
+        private int tokenStartPosition { get; }
+        private static int lastId { get; set; }
 
         public static void SetLastId() 
         { 
-            _lastId = 0; 
+            lastId = 0; 
         }
 
-        public ParseErrors(ErrorType errorType, int tokenPos)
+        public ParseErrors(ErrorType errorType, int tokenPosition)
         {
-            if (_lastId == 0)
-                _id = _lastId;
+            if (lastId == 0)
+                id = lastId;
             else
-                _id = ++_lastId;
-            _tokenStartPos = tokenPos;
-            _msg = Msg(errorType);
+                id = ++lastId;
+            tokenStartPosition = tokenPosition;
+            message = GeneratingErrorMessage(errorType);
 
         }
 
-        public ParseErrors(string msg, int tokenStartPos, string value)
+        public ParseErrors(string msg, int tokenStartPosition, string value)
         {
-            _id = ++_lastId;
-            _msg = msg;
-            _tokenStartPos = tokenStartPos;
-            _tokenValue = value;
+            id = ++lastId;
+            message = msg;
+            this.tokenStartPosition = tokenStartPosition;
+            tokenValue = value;
         }
 
-        public ParseErrors(string msg, int tokenStartPos)
+        public ParseErrors(string msg, int tokenStartPosition)
         {
-            _id = ++_lastId;
-            _msg = msg;
-            _tokenStartPos = tokenStartPos;
+            id = ++lastId;
+            message = msg;
+            this.tokenStartPosition = tokenStartPosition;
         }
 
-        private string Msg(ErrorType errorType)
+        private string GeneratingErrorMessage(ErrorType errorType)
         {
             switch (errorType)
             {
                 case ErrorType.IdFirstSymb:
                     return "Идентификатор должен начинаться с буквы";
-                case ErrorType.WaitedId:
+                case ErrorType.WaitedIdentificator:
                     return "Ожидался идентификатор";
-                case ErrorType.InvalidSymb:
+                case ErrorType.InvalidSymbol:
                     return "Неизвестный символ";
                 case ErrorType.WaitedIdOrExp:
                     return "Ожидался идентификатор или выражение";
@@ -84,16 +83,16 @@ namespace tflacv2._0
         {
             int i = 0;
             List<ParseErrors> errors = Parser.GetErrors();
-            string errorsOut = "";
+            string errorsMessage = "";
             while (i < errors.Count)
             {
-                if (_tokenValue == null)
-                    errorsOut += $"{errors[i]._id}. Ошибка в позиции {errors[i]._tokenStartPos + 1}: {errors[i]._msg}\n";
+                if (tokenValue == null)
+                    errorsMessage += $"{errors[i].id}. Ошибка в позиции {errors[i].tokenStartPosition + 1}: {errors[i].message}\n";
                 else
-                    errorsOut += $"{errors[i]._id}. Ошибка в позиции {errors[i]._tokenStartPos + 1}: {errors[i]._msg}\n";
+                    errorsMessage += $"{errors[i].id}. Ошибка в позиции {errors[i].tokenStartPosition + 1}: {errors[i].message}\n";
                 i++;
             }
-            return errorsOut;
+            return errorsMessage;
         }
 
     }
