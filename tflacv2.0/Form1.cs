@@ -397,5 +397,10 @@ namespace tflacv2._0
         {
             openDocument("\\html-documents\\Исходный код программы.html");
         }
+
+        private void видToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
