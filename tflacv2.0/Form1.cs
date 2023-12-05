@@ -352,5 +352,50 @@ namespace tflacv2._0
                 return;
             richTextBoxOutput.Font = new Font(richTextBoxOutput.Font.FontFamily, richTextBoxOutput.Font.Size - 2);
         }
+
+        private void вызовСправкиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Справка.html");
+        }
+
+        private void постановкаЗадачиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Постановка задачи.html");
+        }
+
+        private void грамматикаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Разработка грамматики.html");
+        }
+
+        private void классификацияГрамматикиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Классификация грамматики.html");
+        }
+
+        private void методАнализаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Метод анализа.html");
+        }
+
+        private void диагностикаИНейтрализацияОшибкиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Диагностика и нейтрализация синтаксических ошибок.html");
+        }
+
+        private void тестовыйПримерToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Тестовый пример.html");
+        }
+
+        private void списокЛитературыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Список литературы.html");
+        }
+
+        private void исходныйКодПрограммыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openDocument("\\html-documents\\Исходный код программы.html");
+        }
     }
 }
